@@ -65,7 +65,10 @@ public struct CollisionEventDestroyJob : ICollisionEventsJobBase
         var entBLoseHP = hp[entB];
         entBLoseHP.hp -= entAInflictDMG.dmg;
         entALoseHP.hp -= entBInflictDMG.dmg;
-        
+        dmg[entA] = entAInflictDMG;
+        hp[entA] = entALoseHP;
+        dmg[entB] = entBInflictDMG;
+        hp[entB] = entBLoseHP;
         if (entALoseHP.hp <= 0)
         {
             var DestroyComponent = deadStatus[entA];

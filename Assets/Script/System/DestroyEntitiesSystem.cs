@@ -13,12 +13,19 @@ public partial struct DestroyEntitiesSystem : ISystem
     public void OnUpdate(ref SystemState state)
     {
         var ecb = new EntityCommandBuffer(Allocator.Temp);
-        foreach (var (deadStatus, entity) in SystemAPI.Query<RefRW<DeadStatus>>().WithEntityAccess())
+        foreach (var (deadStatus, entity) in SystemAPI.Query<RefRW<DeadStatus>>().WithNone<BulletSpeed>().WithEntityAccess())
         {   
+            if (deadStatus.ValueRO.isDead)
+            {   
+                ecb.DestroyEntity(entity);
+                point++;
+            }
+        }
+        foreach (var (deadStatus, entity) in SystemAPI.Query<RefRW<DeadStatus>>().WithAll<BulletSpeed>().WithEntityAccess())
+        {
             if (deadStatus.ValueRO.isDead)
             {
                 ecb.DestroyEntity(entity);
-                point++;
             }
         }
         foreach (var score in SystemAPI.Query<RefRW<ScoreBoard>>())

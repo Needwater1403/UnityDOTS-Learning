@@ -44,13 +44,6 @@ public partial struct CollisionEventDestroySystem : ISystem
             hp = data.hp
         }.Schedule(SystemAPI.GetSingleton<SimulationSingleton>(), state.Dependency);
         state.Dependency.Complete();
-        foreach (var (transform, speed) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<Speed>>())
-        {
-            foreach (var (transform1, bulletSpeed) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<BulletSpeed>>())
-            {
-                
-            }
-        }
     }
 }
 

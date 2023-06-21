@@ -69,19 +69,3 @@ public partial struct BulletSpawnSystem : ISystem
         ecb.Playback(state.EntityManager);
     }
 }
-
-
-//var entity = ecb.Instantiate(bulletSpawn.prefab);
-//state.Dependency.Complete();
-//foreach (var (transform, bullet) in SystemAPI.Query<RefRW<LocalToWorld>, RefRO<Bullet>>())
-//{
-//    ecb.SetComponent(entity, new LocalTransform
-//    {
-//        Position = transform.ValueRW.Position,
-//    });
-
-//}
-//ecb.SetComponent(entity, new PhysicsVelocity
-//{
-//    Linear = new float3(0, 0, 10)
-//});

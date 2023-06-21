@@ -21,32 +21,42 @@ public partial struct BulletSpawnSystem : ISystem
         
         var ecb = new EntityCommandBuffer(Allocator.Temp);
         var world = state.World.Unmanaged;
-        //var bulletSpawn = SystemAPI.GetSingleton<Bullet>();
-
-        if (Input.GetKeyDown("space"))
+        var ecb = new EntityCommandBuffer(Allocator.Temp);
+        var isPressedSpace = Input.GetAxisRaw("Fire1");
+        foreach (var transform1 in SystemAPI.Query<RefRW<LocalTransform>>().WithAll<Player>())
         {
-            
-            foreach (var (transform1, player) in SystemAPI.Query<RefRW<LocalTransform>, RefRO<Player>>())
+            foreach (var (transform, bullet) in SystemAPI.Query<RefRW<LocalToWorld>, RefRW<Bullet>>())
             {
-                foreach (var (transform, bullet) in SystemAPI.Query<RefRW<LocalToWorld>, RefRO<Bullet>>())
+                if (isPressedSpace == 0)
                 {
-                    //var bulletEntities = CollectionHelper.CreateNativeArray<Entity, RewindableAllocator>(bullet.ValueRO.num, ref world.UpdateAllocator);
-                    //var entity = ecb.Instantiate(bullet.ValueRO.prefab);
-                    var entity = state.EntityManager.Instantiate(bullet.ValueRO.prefab);
-                    state.Dependency.Complete();
-                    foreach (var (transform2, bulletSpeed, ent) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<BulletSpeed>>().WithEntityAccess())
-                    {   
-                        if(!bulletSpeed.ValueRW.shootOut) // TO AVOID ALL BULLET RESET BACK TO THE GUN POSITION
+                    bullet.ValueRW.lastSpawnedTime = 0;
+                }
+                else
+                {
+                    if (bullet.ValueRO.lastSpawnedTime <= 0)
+                    {
+                        var entity = state.EntityManager.Instantiate(bullet.ValueRO.prefab);
+
+                        foreach (var (transform2, bulletSpeed, ent) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<BulletSpeed>>().WithEntityAccess())
                         {
-                            transform2.ValueRW.Position = new float3(0.8f, 0, 0) + transform1.ValueRW.Position;
-                            bulletSpeed.ValueRW.shootOut = true;
+                            if (!bulletSpeed.ValueRW.shootOut) // TO AVOID ALL BULLET RESET BACK TO THE GUN POSITION
+                            {
+                                transform2.ValueRW.Position = transform1.ValueRO.Position + new float3(0.8f, 0, 0);
+                                bulletSpeed.ValueRW.shootOut = true;
+                            }
+                            ecb.SetComponent(ent, new PhysicsVelocity
+                            {
+                                Linear = new float3(0, 0, bulletSpeed.ValueRW.value)
+                            });
                         }
-                        ecb.SetComponent(entity, new PhysicsVelocity
-                        {
-                            Linear = new float3(0, 0, bulletSpeed.ValueRW.value)
-                        });
+                        bullet.ValueRW.lastSpawnedTime = bullet.ValueRO.spawnSpeed;
+                    }
+                    else
+                    {
+                        bullet.ValueRW.lastSpawnedTime -= SystemAPI.Time.DeltaTime;
                     }
                 }
+
             }
         }
         foreach (var (transform2, bulletSpeed, deadStatus) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<BulletSpeed>, RefRW<DeadStatus>> ())
